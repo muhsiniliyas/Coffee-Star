@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ProductCard from '../components/ProductCard'
 import { allProducts } from '../data/products'
-import { Search, Filter, Coffee, Wine, Leaf, Cookie, Grid3x3, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { Search, Filter, Coffee, Wine, Leaf, Cookie, Grid3x3, List, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react'
 
 export default function Shop() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -119,7 +119,7 @@ export default function Shop() {
           {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 z-10" />
               <input
                 type="text"
                 value={searchQuery}
@@ -130,9 +130,10 @@ export default function Shop() {
               {searchQuery && (
                 <button
                   onClick={() => handleSearchChange('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                  aria-label="Clear search"
                 >
-                  ✕
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -164,38 +165,84 @@ export default function Shop() {
             </div>
           </div>
 
-          {/* Category Filters */}
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            <Filter className="w-5 h-5 text-gray-400 flex-shrink-0 hidden sm:block" />
-            {categories.map(category => (
-              <button
-                key={category.id}
-                onClick={() => handleCategoryChange(category.id)}
-                className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-medium whitespace-nowrap transition-all text-sm sm:text-base ${
-                  selectedCategory === category.id
-                    ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg scale-105'
-                    : 'glass-effect hover:shadow-lg hover:scale-105 active:scale-95'
-                }`}
-              >
-                {category.icon}
-                <span>{category.label}</span>
-              </button>
-            ))}
+          {/* Category Filters - Enhanced Mobile */}
+          <div className="relative">
+            {/* Filter Label */}
+            <div className="flex items-center gap-2 mb-3 sm:mb-0">
+              <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+              <span className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300">
+                Filter by Category
+              </span>
+              {selectedCategory !== 'all' && (
+                <button
+                  onClick={() => handleCategoryChange('all')}
+                  className="ml-auto text-xs sm:text-sm text-amber-600 hover:text-amber-700 font-medium"
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
+
+            {/* Horizontal Scroll Container with Gradient Hints */}
+            <div className="relative">
+              {/* Left Gradient Hint */}
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-amber-50 dark:from-gray-900 to-transparent z-10 pointer-events-none sm:hidden" />
+              
+              {/* Right Gradient Hint */}
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-amber-50 dark:from-gray-900 to-transparent z-10 pointer-events-none sm:hidden" />
+
+              {/* Filter Buttons */}
+              <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
+                {categories.map(category => (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryChange(category.id)}
+                    className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-medium whitespace-nowrap transition-all text-sm sm:text-base snap-start flex-shrink-0 ${
+                      selectedCategory === category.id
+                        ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg scale-105'
+                        : 'glass-effect hover:shadow-lg hover:scale-105 active:scale-95'
+                    }`}
+                  >
+                    {category.icon}
+                    <span>{category.label}</span>
+                    {selectedCategory === category.id && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Scroll Indicator */}
+            <div className="flex sm:hidden justify-center gap-1 mt-2">
+              {categories.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-1 rounded-full transition-all ${
+                    index === categories.findIndex(c => c.id === selectedCategory)
+                      ? 'w-4 bg-amber-600'
+                      : 'w-1 bg-gray-300 dark:bg-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Results Counter and Pagination Info */}
-        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 glass-effect rounded-xl p-4">
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Showing <span className="font-semibold text-amber-600 dark:text-amber-400">{indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, filteredProducts.length)}</span> of <span className="font-semibold text-amber-600 dark:text-amber-400">{filteredProducts.length}</span> products
             {searchQuery && (
-              <span> for "<span className="font-semibold">{searchQuery}</span>"</span>
+              <span className="block sm:inline mt-1 sm:mt-0"> for "<span className="font-semibold">{searchQuery}</span>"</span>
             )}
           </p>
           {totalPages > 1 && (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Page {currentPage} of {totalPages}
-            </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                Page {currentPage} of {totalPages}
+              </span>
+            </div>
           )}
         </div>
 
@@ -284,7 +331,7 @@ export default function Shop() {
                 </div>
 
                 {/* Mobile Pagination */}
-                <div className="flex sm:hidden items-center gap-2 w-full">
+                <div className="flex sm:hidden items-center gap-2 w-full max-w-sm">
                   <button
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
@@ -293,7 +340,7 @@ export default function Shop() {
                     <ChevronLeft className="w-5 h-5" />
                     <span>Previous</span>
                   </button>
-                  <div className="px-4 py-3 rounded-xl glass-effect font-semibold">
+                  <div className="px-4 py-3 rounded-xl glass-effect font-semibold text-center min-w-[4rem]">
                     {currentPage}/{totalPages}
                   </div>
                   <button
@@ -381,6 +428,21 @@ export default function Shop() {
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out forwards;
         }
       `}</style>
     </div>
